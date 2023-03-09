@@ -35,12 +35,11 @@ RUN $url = ('https://nodejs.org/dist/v{0}/node-v{0}-win-x64.zip' -f $env:NODE_VE
     \
     Write-Host 'Complete.'
 
-# "It is recommended to install Yarn through the npm package manager" (https://classic.yarnpkg.com/en/docs/install)
-RUN Write-Host 'Installing "yarn" ...'; \
-    npm install --global ('yarn@{0}' -f $env:YARN_VERSION); \
+RUN Write-Host 'Installing "pnpm" ...'; \
+    npm install --global pnpm; \
     \
-    Write-Host 'Verifying ("yarn --version") ...'; \
-    yarn --version; \
+    Write-Host 'Verifying ("pnpm --version") ...'; \
+    pnpm --version; \
     \
     Write-Host 'Complete.'
 
