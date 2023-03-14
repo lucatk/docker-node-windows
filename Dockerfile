@@ -37,16 +37,13 @@ RUN $url = ('https://nodejs.org/dist/v{0}/node-v{0}-win-x64.zip' -f $env:NODE_VE
     \
     Write-Host 'Complete.'
 
-RUN corepack enable
-
-# "It is recommended to install Yarn through the npm package manager" (https://classic.yarnpkg.com/en/docs/install)
-#RUN Write-Host 'Installing "yarn" ...'; \
-#    npm install --global ('yarn@{0}' -f $env:YARN_VERSION); \
-#    \
-#    Write-Host 'Verifying ("yarn --version") ...'; \
-#    yarn --version; \
-#    \
-#    Write-Host 'Complete.'
+RUN Write-Host 'Installing "pnpm" ...'; \
+    npm install --global pnpm; \
+    \
+    Write-Host 'Verifying ("pnpm --version") ...'; \
+    pnpm --version; \
+    \
+    Write-Host 'Complete.'
 
 ENV GIT_VERSION 2.20.1
 ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/v${GIT_VERSION}.windows.1/MinGit-${GIT_VERSION}-busybox-64-bit.zip
