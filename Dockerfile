@@ -1,16 +1,18 @@
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 as download
+ARG server_tag=ltsc2019
+
+FROM mcr.microsoft.com/windows/servercore:$server_tag
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 # PATH isn't actually set in the Docker image, so we have to set it from within the container
-RUN $newPath = ('C:\nodejs;{0}\Yarn\bin;{1}' -f $env:LOCALAPPDATA, $env:PATH); \
+RUN $newPath = ('C:\nodejs;C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin;{0}' -f $env:PATH); \
     Write-Host ('Updating PATH: {0}' -f $newPath); \
     [Environment]::SetEnvironmentVariable('PATH', $newPath, [EnvironmentVariableTarget]::Machine)
 # doing this first to share cache across versions more aggressively
 
 ENV NODE_VERSION 18.14.2
 ENV NODE_SHA256 fccac5e259f1196a2a30e82f42211dd7dddd9a48e4fd3f1627900aa23dff4ffa
-ENV YARN_VERSION 1.22.19
+#ENV YARN_VERSION 1.22.19
 
 RUN $url = ('https://nodejs.org/dist/v{0}/node-v{0}-win-x64.zip' -f $env:NODE_VERSION); \
     Write-Host ('Downloading {0} ...' -f $url); \
@@ -35,14 +37,16 @@ RUN $url = ('https://nodejs.org/dist/v{0}/node-v{0}-win-x64.zip' -f $env:NODE_VE
     \
     Write-Host 'Complete.'
 
+RUN corepack enable
+
 # "It is recommended to install Yarn through the npm package manager" (https://classic.yarnpkg.com/en/docs/install)
-RUN Write-Host 'Installing "yarn" ...'; \
-    npm install --global ('yarn@{0}' -f $env:YARN_VERSION); \
-    \
-    Write-Host 'Verifying ("yarn --version") ...'; \
-    yarn --version; \
-    \
-    Write-Host 'Complete.'
+#RUN Write-Host 'Installing "yarn" ...'; \
+#    npm install --global ('yarn@{0}' -f $env:YARN_VERSION); \
+#    \
+#    Write-Host 'Verifying ("yarn --version") ...'; \
+#    yarn --version; \
+#    \
+#    Write-Host 'Complete.'
 
 ENV GIT_VERSION 2.20.1
 ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/v${GIT_VERSION}.windows.1/MinGit-${GIT_VERSION}-busybox-64-bit.zip
@@ -54,16 +58,10 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Expand-Archive git.zip -DestinationPath C:\git; \
     Remove-Item git.zip
 
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2019
+RUN Invoke-WebRequest 'http://download.microsoft.com/download/0/6/4/064F84EA-D1DB-4EAA-9A5C-CC2F0FF6A638/vc_redist.x64.exe' -OutFile vcredist_x64.exe ; \
+    Start-Process vcredist_x64.exe -ArgumentList '/install', '/passive', '/norestart' -NoNewWindow -Wait ; \
+    Remove-Item vcredist_x64.exe
 
-ENV NPM_CONFIG_LOGLEVEL info
-
-COPY --from=download /nodejs /nodejs
-COPY --from=download /git /git
-
-ARG SETX=/M
-USER ContainerAdministrator
-RUN setx %SETX% PATH "%PATH%;C:\nodejs;C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin"
 USER ContainerUser
 
 CMD [ "node" ]
