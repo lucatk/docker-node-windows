@@ -1,0 +1,41 @@
+ARG server_tag=ltsc2019
+ARG node_version=18.14.2
+
+FROM lucatk/node-windows:$node_version-$server_tag-servercore AS core
+
+FROM mcr.microsoft.com/windows/nanoserver:$server_tag
+
+ENV NPM_CONFIG_LOGLEVEL info
+
+COPY --from=core /nodejs /nodejs
+COPY --from=core /git /git
+
+# VC2015 runtime dlls
+COPY --from=core /windows/system32/vcamp140.dll /windows/system32/vcamp140.dll
+COPY --from=core /windows/system32/vccorlib140.dll /windows/system32/vccorlib140.dll
+COPY --from=core /windows/system32/vcomp140.dll /windows/system32/vcomp140.dll
+COPY --from=core /windows/system32/vcruntime140.dll /windows/system32/vcruntime140.dll
+COPY --from=core /windows/system32/msvcp140.dll /windows/system32/msvcp140.dll
+COPY --from=core /windows/system32/mfc140.dll /windows/system32/mfc140.dll
+COPY --from=core /windows/system32/mfc140chs.dll /windows/system32/mfc140chs.dll
+COPY --from=core /windows/system32/mfc140cht.dll /windows/system32/mfc140cht.dll
+COPY --from=core /windows/system32/mfc140deu.dll /windows/system32/mfc140deu.dll
+COPY --from=core /windows/system32/mfc140enu.dll /windows/system32/mfc140enu.dll
+COPY --from=core /windows/system32/mfc140esn.dll /windows/system32/mfc140esn.dll
+COPY --from=core /windows/system32/mfc140fra.dll /windows/system32/mfc140fra.dll
+COPY --from=core /windows/system32/mfc140ita.dll /windows/system32/mfc140ita.dll
+COPY --from=core /windows/system32/mfc140jpn.dll /windows/system32/mfc140jpn.dll
+COPY --from=core /windows/system32/mfc140kor.dll /windows/system32/mfc140kor.dll
+COPY --from=core /windows/system32/mfc140rus.dll /windows/system32/mfc140rus.dll
+COPY --from=core /windows/system32/mfc140u.dll /windows/system32/mfc140u.dll
+COPY --from=core /windows/system32/mfcm140.dll /windows/system32/mfcm140.dll
+COPY --from=core /windows/system32/mfcm140u.dll /windows/system32/mfcm140u.dll
+
+ARG SETX=/M
+USER ContainerAdministrator
+RUN setx %SETX% PATH "%PATH%;C:\nodejs;C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin"
+
+USER ContainerUser
+
+ENTRYPOINT [ "cmd.exe", "/s", "/c" ]
+CMD [ "node" ]
