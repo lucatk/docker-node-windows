@@ -61,4 +61,5 @@ RUN Invoke-WebRequest 'http://download.microsoft.com/download/0/6/4/064F84EA-D1D
 
 USER ContainerUser
 
+ENTRYPOINT [ "cmd.exe", "/s", "/c" ]
 CMD [ "node" ]
