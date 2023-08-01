@@ -40,6 +40,9 @@ RUN $url = ('https://nodejs.org/dist/v{0}/node-v{0}-win-x64.zip' -f $env:NODE_VE
 RUN Write-Host 'Installing "pnpm" ...'; \
     npm install --global pnpm; \
     \
+    Write-Host 'Setting up ("pnpm setup") ...'; \
+    pnpm setup; \
+    \
     Write-Host 'Verifying ("pnpm --version") ...'; \
     pnpm --version; \
     \
